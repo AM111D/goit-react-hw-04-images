@@ -7,6 +7,7 @@ const FetchImageApi = async (imagesName, page = 1) => {
   }
   const data = await response.json();
   return data.hits;
+  console.log(hits);
 };
 
 export default FetchImageApi;
