@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Searchbar from './Searchbar/Searchbar';
@@ -7,127 +7,285 @@ import ImagesLoader from './Loader/Loader';
 import ImageSearchError from './ImagesError/ImagesError';
 import ImagesGallery from './ImageGallery/ImageGallery';
 import ButtonLoadMore from './Button/ButtonLoadMore';
-import Modal from './Modal/Modal';
+// import Modal from './Modal/Modal';
 
-class App extends Component {
-  state = {
-    imagesName: '',
-    images: [],
-    error: null,
-    status: 'idle',
-    page: 1,
-    loading: false,
-    isButtonDisabled: true,
-    showModal: false,
-    selectedImage: null,
+const Status = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  REJECTED: 'rejected',
+};
+
+function App() {
+  const [imagesName, setImagesName] = useState('');
+  const [images, setImages] = useState([]);
+  const [error, setError] = useState(null);
+  const [status, setStatus] = useState(Status.IDLE);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  useEffect(() => {
+    if (!imagesName) {
+      return;
+    }
+    setStatus(Status.PENDING);
+    setLoading(true);
+
+    const delay = setTimeout(() => {
+      FetchImageApi(imagesName)
+        .then(images => {
+          return images.length < 12
+            ? (setImages(images),
+              setStatus(Status.RESOLVED),
+              setIsButtonDisabled(true))
+            : (setImages(images),
+              setStatus(Status.RESOLVED),
+              setIsButtonDisabled(false));
+        })
+        .catch(error => {
+          setError(error);
+          setStatus(Status.REJECTED);
+        })
+        .finally(() => setLoading(false));
+    }, 1000); // 1-секундная задержка
+
+    return () => clearTimeout(delay); // очистка таймера при изменении зависимостей
+  }, [imagesName]);
+
+  const loadMoreImages = () => {
+    setLoading(true);
+    setIsButtonDisabled(true);
+    setPage(page + 1);
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.imagesName !== this.state.imagesName) {
-      this.getImages();
+  useEffect(() => {
+    if (!imagesName) {
+      return;
+    }
+    const fetchData = async () => {
+      try {
+        const newImages = await FetchImageApi(imagesName, page + 1);
+        const allImages = [...images, ...newImages];
+        setImages(allImages);
+        setStatus(Status.RESOLVED);
+      } catch (error) {
+        setStatus(Status.REJECTED);
+      }
+      setIsButtonDisabled(false);
+      setLoading(false);
+    };
+
+    setIsButtonDisabled(true);
+    fetchData();
+  }, [imagesName, page]);
+
+  //     console.log(images);
+
+  //     return images.length < 12
+  //       ? (setImages([images]), setStatus('resolve'), setIsButtonDisabled(true))
+  //       : (setImages([images]),
+  //         setStatus('resolve'),
+  //         setIsButtonDisabled(false));
+  //   } catch (error) {
+  //     setError(error);
+  //     setStatus('rejected');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [imagesName, page]);
+
+  // componentDidUpdate(prevProps, prevState) {
+  //   if (prevState.imagesName !== this.state.imagesName) {
+  //     this.getImages();
+  //   }
+  // }
+
+  // handleOpenModal = largeImageURL => {
+  //   this.setState({ showModal: true, selectedImage: largeImageURL });
+  // };
+
+  // handleCloseModal = () => {
+  //   this.setState({ showModal: false });
+  // };
+
+  // toggleModal = () => {
+  //   this.setState(({ showModal }) => ({
+  //     showModal: !showModal,
+  //   }));
+  // };
+
+  // const { images, error, status, isButtonDisabled, showModal } = this.state;
+
+  if (status === Status.PENDING) {
+    return <ImagesLoader />;
+  }
+  if (status === Status.REJECTED) {
+    return <ImageSearchError message={error.message} />;
+  }
+  if (status === Status.RESOLVED) {
+    if (images.length === 0) {
+      return <p>По запросу "{imagesName}" ничего не найдено</p>;
     }
   }
 
-  handleFormSubmit = imagesName => {
-    console.log(imagesName);
-    this.setState({ imagesName });
-  };
+  return (
+    <div>
+      <Searchbar onSubmit={setImagesName} />
+      <ImagesGallery images={images} />
+      {!isButtonDisabled && (
+        <ButtonLoadMore
+          loadMoreImages={loadMoreImages}
+          disabled={isButtonDisabled}
+        />
+      )}
+      {/* <ImagesGallery images={images} onClick={this.handleOpenModal} /> */}
 
-  getImages = async () => {
-    this.setState({ status: 'pending', loading: true });
-    try {
-      const images = await FetchImageApi(this.state.imagesName);
-      console.log(images);
-      if (images.length < 12) {
-        this.setState({
-          images,
-          status: 'resolve',
-          isButtonDisabled: true,
-        });
-      } else {
-        this.setState({
-          images,
-          status: 'resolve',
-          isButtonDisabled: false,
-        });
-      }
-    } catch (error) {
-      this.setState({ error, status: 'rejected' });
-    } finally {
-      this.setState({ loading: false });
-    }
-  };
+      {/* {!isButtonDisabled && (
+        <ButtonLoadMore
+          loadMoreImages={this.loadMoreImages}
+          disabled={isButtonDisabled}
+        />
+      )}
+      
 
-  loadMoreImages = async () => {
-    try {
-      const newImages = await FetchImageApi(
-        this.state.imagesName,
-        this.state.page + 1
-      );
+      {showModal && (
+        <Modal
+          onClose={this.handleCloseModal}
+          images={this.state.images}
+          onClick={this.handleCloseModal}
+          selectedImage={this.state.selectedImage}
+        />
+      )} */}
 
-      const allImages = [...this.state.images, ...newImages];
-      this.setState({
-        images: allImages,
-        status: 'resolve',
-        page: this.state.page + 1,
-      });
-    } catch (error) {}
-  };
-
-  handleOpenModal = largeImageURL => {
-    this.setState({ showModal: true, selectedImage: largeImageURL });
-  };
-
-  handleCloseModal = () => {
-    this.setState({ showModal: false });
-  };
-
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
-  };
-
-  render() {
-    const { images, error, status, isButtonDisabled, showModal } = this.state;
-
-    if (status === 'pending') {
-      return <ImagesLoader />;
-    }
-    if (status === 'rejected') {
-      return <ImageSearchError message={error.message} />;
-    }
-    if (status === 'resolve') {
-      if (images.length === 0) {
-        return <p>По запросу "{this.state.imagesName}" ничего не найдено</p>;
-      }
-    }
-
-    return (
-      <div>
-        <Searchbar onSubmit={this.handleFormSubmit} />
-        <ImagesGallery images={images} onClick={this.handleOpenModal} />
-
-        {!isButtonDisabled && (
-          <ButtonLoadMore
-            loadMoreImages={this.loadMoreImages}
-            disabled={isButtonDisabled}
-          />
-        )}
-
-        {showModal && (
-          <Modal
-            onClose={this.handleCloseModal}
-            images={this.state.images}
-            onClick={this.handleCloseModal}
-            selectedImage={this.state.selectedImage}
-          />
-        )}
-
-        <ToastContainer autoClose={3000} />
-      </div>
-    );
-  }
+      {/* <ToastContainer autoClose={3000} /> */}
+    </div>
+  );
 }
 
 export default App;
+
+// class oldApp extends Component {
+//   state = {
+//     imagesName: '',
+//     images: [],
+//     error: null,
+//     status: 'idle',
+//     page: 1,
+//     loading: false,
+//     isButtonDisabled: true,
+//     showModal: false,
+//     selectedImage: null,
+//   };
+
+//   componentDidUpdate(prevProps, prevState) {
+//     if (prevState.imagesName !== this.state.imagesName) {
+//       this.getImages();
+//     }
+//   }
+
+//   handleFormSubmit = imagesName => {
+//     console.log(imagesName);
+//     this.setState({ imagesName });
+//   };
+
+//   getImages = async () => {
+//     this.setState({ status: 'pending', loading: true });
+//     try {
+//       const images = await FetchImageApi(this.state.imagesName);
+//       console.log(images);
+//       if (images.length < 12) {
+//         this.setState({
+//           images,
+//           status: 'resolve',
+//           isButtonDisabled: true,
+//         });
+//       } else {
+//         this.setState({
+//           images,
+//           status: 'resolve',
+//           isButtonDisabled: false,
+//         });
+//       }
+//     } catch (error) {
+//       this.setState({ error, status: 'rejected' });
+//     } finally {
+//       this.setState({ loading: false });
+//     }
+//   };
+
+//   loadMoreImages = async () => {
+//     try {
+//       const newImages = await FetchImageApi(
+//         this.state.imagesName,
+//         this.state.page + 1
+//       );
+
+//       const allImages = [...this.state.images, ...newImages];
+//       this.setState({
+//         images: allImages,
+//         status: 'resolve',
+//         page: this.state.page + 1,
+//       });
+//     } catch (error) {}
+//   };
+
+//   handleOpenModal = largeImageURL => {
+//     this.setState({ showModal: true, selectedImage: largeImageURL });
+//   };
+
+//   handleCloseModal = () => {
+//     this.setState({ showModal: false });
+//   };
+
+//   toggleModal = () => {
+//     this.setState(({ showModal }) => ({
+//       showModal: !showModal,
+//     }));
+//   };
+
+//   render() {
+//     const { images, error, status, isButtonDisabled, showModal } = this.state;
+
+//     if (status === 'pending') {
+//       return <ImagesLoader />;
+//     }
+//     if (status === 'rejected') {
+//       return <ImageSearchError message={error.message} />;
+//     }
+//     if (status === 'resolve') {
+//       if (images.length === 0) {
+//         return <p>По запросу "{this.state.imagesName}" ничего не найдено</p>;
+//       }
+//     }
+
+//     return (
+//       <div>
+//         <Searchbar onSubmit={this.handleFormSubmit} />
+//         <ImagesGallery images={images} onClick={this.handleOpenModal} />
+
+//         {!isButtonDisabled && (
+//           <ButtonLoadMore
+//             loadMoreImages={this.loadMoreImages}
+//             disabled={isButtonDisabled}
+//           />
+//         )}
+
+//         {showModal && (
+//           <Modal
+//             onClose={this.handleCloseModal}
+//             images={this.state.images}
+//             onClick={this.handleCloseModal}
+//             selectedImage={this.state.selectedImage}
+//           />
+//         )}
+
+//         <ToastContainer autoClose={3000} />
+//       </div>
+//     );
+//   }
+// }
+
+// export default oldApp;
