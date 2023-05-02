@@ -62,26 +62,29 @@ function App() {
     setPage(page + 1);
   };
 
-  useEffect(() => {
-    // if (!imagesName) {
-    //   return;
-    // }
-    const fetchData = async () => {
-      try {
-        const newImages = await FetchImageApi(imagesName, page + 1);
-        const allImages = [...images, ...newImages];
-        setImages(allImages);
-        setStatus(Status.RESOLVED);
-      } catch (error) {
-        setStatus(Status.REJECTED);
-      }
-      setIsButtonDisabled(false);
-      setLoading(false);
-    };
+  useEffect(
+    ({ imagesName, images }) => {
+      // if (!imagesName) {
+      //   return;
+      // }
+      const fetchData = async () => {
+        try {
+          const newImages = await FetchImageApi(imagesName, page + 1);
+          const allImages = [...images, ...newImages];
+          setImages(allImages);
+          setStatus(Status.RESOLVED);
+        } catch (error) {
+          setStatus(Status.REJECTED);
+        }
+        setIsButtonDisabled(false);
+        setLoading(false);
+      };
 
-    setIsButtonDisabled(true);
-    fetchData();
-  }, [page, imagesName, images]);
+      setIsButtonDisabled(true);
+      fetchData();
+    },
+    [page]
+  );
 
   const handleOpenModal = largeImageURL => {
     setShowModal(true);
