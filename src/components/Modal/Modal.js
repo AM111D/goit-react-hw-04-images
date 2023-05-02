@@ -9,7 +9,7 @@ function Modal({ images, selectedImage, onClose }) {
         onClose();
       }
     });
-  }, [selectedImage]);
+  }, [selectedImage, onClose]);
 
   return (
     <div className={css.overlay} onClick={onClose}>
