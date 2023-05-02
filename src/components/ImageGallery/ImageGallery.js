@@ -1,13 +1,14 @@
 import React from 'react';
 import css from './ImageGallery.module.css';
 import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 
 function ImagesGallery({ images, onClick }) {
-  console.log(images);
-  // const handleImageClick = largeImageURL => {
-  //   onClick(largeImageURL);
-  // };
+  // console.log(images);
+
+  const handleImageClick = largeImageURL => {
+    onClick(largeImageURL);
+  };
 
   return (
     <ul className={css.imageGallery}>
@@ -29,14 +30,14 @@ function ImagesGallery({ images, onClick }) {
 
 export default ImagesGallery;
 
-// ImagesGallery.propTypes = {
-//   images: PropTypes.arrayOf(
-//     PropTypes.shape({
-//       id: PropTypes.string.isRequired,
-//       tags: PropTypes.string.isRequired,
-//       webformatURL: PropTypes.string.isRequired,
-//       largeImageURL: PropTypes.string.isRequired,
-//     })
-//   ),
-//   onClick: PropTypes.func.isRequired,
-// };
+ImagesGallery.propTypes = {
+  images: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      tags: PropTypes.string.isRequired,
+      webformatURL: PropTypes.string.isRequired,
+      largeImageURL: PropTypes.string.isRequired,
+    })
+  ),
+  onClick: PropTypes.func.isRequired,
+};

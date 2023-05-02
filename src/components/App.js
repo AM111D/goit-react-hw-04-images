@@ -7,7 +7,7 @@ import ImagesLoader from './Loader/Loader';
 import ImageSearchError from './ImagesError/ImagesError';
 import ImagesGallery from './ImageGallery/ImageGallery';
 import ButtonLoadMore from './Button/ButtonLoadMore';
-// import Modal from './Modal/Modal';
+import Modal from './Modal/Modal';
 
 const Status = {
   IDLE: 'idle',
@@ -37,6 +37,7 @@ function App() {
     const delay = setTimeout(() => {
       FetchImageApi(imagesName)
         .then(images => {
+          console.log(images);
           return images.length < 12
             ? (setImages(images),
               setStatus(Status.RESOLVED),
@@ -80,30 +81,16 @@ function App() {
 
     setIsButtonDisabled(true);
     fetchData();
-  }, [imagesName, page]);
-
-  // componentDidUpdate(prevProps, prevState) {
-  //   if (prevState.imagesName !== this.state.imagesName) {
-  //     this.getImages();
-  //   }
-  // }
+  }, [page]);
 
   const handleOpenModal = largeImageURL => {
     setShowModal(true);
     setSelectedImage(largeImageURL);
   };
 
-  // handleCloseModal = () => {
-  //   this.setState({ showModal: false });
-  // };
-
-  // toggleModal = () => {
-  //   this.setState(({ showModal }) => ({
-  //     showModal: !showModal,
-  //   }));
-  // };
-
-  // const { images, error, status, isButtonDisabled, showModal } = this.state;
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
 
   if (status === Status.PENDING) {
     return <ImagesLoader />;
@@ -127,151 +114,18 @@ function App() {
           disabled={isButtonDisabled}
         />
       )}
-      {/* <ImagesGallery images={images} onClick={this.handleOpenModal} /> */}
-
-      {/* {!isButtonDisabled && (
-        <ButtonLoadMore
-          loadMoreImages={this.loadMoreImages}
-          disabled={isButtonDisabled}
-        />
-      )}
-      
-
       {showModal && (
         <Modal
-          onClose={this.handleCloseModal}
-          images={this.state.images}
-          onClick={this.handleCloseModal}
-          selectedImage={this.state.selectedImage}
+          onClose={handleCloseModal}
+          images={images}
+          onClick={handleCloseModal}
+          selectedImage={selectedImage}
         />
-      )} */}
+      )}
 
-      {/* <ToastContainer autoClose={3000} /> */}
+      <ToastContainer autoClose={3000} />
     </div>
   );
 }
 
 export default App;
-
-// class oldApp extends Component {
-//   state = {
-//     imagesName: '',
-//     images: [],
-//     error: null,
-//     status: 'idle',
-//     page: 1,
-//     loading: false,
-//     isButtonDisabled: true,
-//     showModal: false,
-//     selectedImage: null,
-//   };
-
-//   componentDidUpdate(prevProps, prevState) {
-//     if (prevState.imagesName !== this.state.imagesName) {
-//       this.getImages();
-//     }
-//   }
-
-//   handleFormSubmit = imagesName => {
-//     console.log(imagesName);
-//     this.setState({ imagesName });
-//   };
-
-//   getImages = async () => {
-//     this.setState({ status: 'pending', loading: true });
-//     try {
-//       const images = await FetchImageApi(this.state.imagesName);
-//       console.log(images);
-//       if (images.length < 12) {
-//         this.setState({
-//           images,
-//           status: 'resolve',
-//           isButtonDisabled: true,
-//         });
-//       } else {
-//         this.setState({
-//           images,
-//           status: 'resolve',
-//           isButtonDisabled: false,
-//         });
-//       }
-//     } catch (error) {
-//       this.setState({ error, status: 'rejected' });
-//     } finally {
-//       this.setState({ loading: false });
-//     }
-//   };
-
-//   loadMoreImages = async () => {
-//     try {
-//       const newImages = await FetchImageApi(
-//         this.state.imagesName,
-//         this.state.page + 1
-//       );
-
-//       const allImages = [...this.state.images, ...newImages];
-//       this.setState({
-//         images: allImages,
-//         status: 'resolve',
-//         page: this.state.page + 1,
-//       });
-//     } catch (error) {}
-//   };
-
-//   handleOpenModal = largeImageURL => {
-//     this.setState({ showModal: true, selectedImage: largeImageURL });
-//   };
-
-//   handleCloseModal = () => {
-//     this.setState({ showModal: false });
-//   };
-
-//   toggleModal = () => {
-//     this.setState(({ showModal }) => ({
-//       showModal: !showModal,
-//     }));
-//   };
-
-//   render() {
-//     const { images, error, status, isButtonDisabled, showModal } = this.state;
-
-//     if (status === 'pending') {
-//       return <ImagesLoader />;
-//     }
-//     if (status === 'rejected') {
-//       return <ImageSearchError message={error.message} />;
-//     }
-//     if (status === 'resolve') {
-//       if (images.length === 0) {
-//         return <p>По запросу "{this.state.imagesName}" ничего не найдено</p>;
-//       }
-//     }
-
-//     return (
-//       <div>
-//         <Searchbar onSubmit={this.handleFormSubmit} />
-//         <ImagesGallery images={images} onClick={this.handleOpenModal} />
-
-//         {!isButtonDisabled && (
-//           <ButtonLoadMore
-//             loadMoreImages={this.loadMoreImages}
-//             disabled={isButtonDisabled}
-//           />
-//         )}
-
-//         {showModal && (
-//           <Modal
-//             onClose={this.handleCloseModal}
-//             images={this.state.images}
-//             onClick={this.handleCloseModal}
-//             selectedImage={this.state.selectedImage}
-//           />
-//         )}
-
-//         <ToastContainer autoClose={3000} />
-//       </div>
-//     );
-//   }
-// }
-
-// export default oldApp;

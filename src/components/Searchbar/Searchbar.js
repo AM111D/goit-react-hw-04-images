@@ -2,17 +2,14 @@ import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import css from './Searchbar.module.css';
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 
 function Searchbar({ onSubmit }) {
-  console.log(onSubmit);
   const [imagesName, setImagesName] = useState('');
 
   const handleNameChange = event => {
-    console.log(event);
     setImagesName(event.currentTarget.value.toLowerCase());
   };
-  console.log(imagesName);
 
   const handleSubmit = event => {
     event.preventDefault();
@@ -21,7 +18,6 @@ function Searchbar({ onSubmit }) {
       return toast.error('напиши что искать!');
     }
     onSubmit(imagesName);
-    console.log(onSubmit(imagesName));
 
     setImagesName('');
   };
@@ -49,6 +45,6 @@ function Searchbar({ onSubmit }) {
 
 export default Searchbar;
 
-// Searchbar.propTypes = {
-//   onSubmit: PropTypes.func.isRequired,
-// };
+Searchbar.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+};
