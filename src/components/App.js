@@ -63,10 +63,10 @@ function App() {
   };
 
   useEffect(
-    ({ imagesName, images }) => {
-      // if (!imagesName) {
-      //   return;
-      // }
+    (imagesName, images) => {
+      if (!imagesName) {
+        return;
+      }
       const fetchData = async () => {
         try {
           const newImages = await FetchImageApi(imagesName, page + 1);
