@@ -96,7 +96,7 @@ function App() {
   };
 
   if (status === Status.PENDING) {
-    return <ImagesLoader />;
+    return loading && <ImagesLoader />;
   }
   if (status === Status.REJECTED) {
     return <ImageSearchError message={error.message} />;
