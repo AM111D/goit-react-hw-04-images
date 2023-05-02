@@ -82,30 +82,16 @@ function App() {
     fetchData();
   }, [imagesName, page]);
 
-  //     console.log(images);
-
-  //     return images.length < 12
-  //       ? (setImages([images]), setStatus('resolve'), setIsButtonDisabled(true))
-  //       : (setImages([images]),
-  //         setStatus('resolve'),
-  //         setIsButtonDisabled(false));
-  //   } catch (error) {
-  //     setError(error);
-  //     setStatus('rejected');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [imagesName, page]);
-
   // componentDidUpdate(prevProps, prevState) {
   //   if (prevState.imagesName !== this.state.imagesName) {
   //     this.getImages();
   //   }
   // }
 
-  // handleOpenModal = largeImageURL => {
-  //   this.setState({ showModal: true, selectedImage: largeImageURL });
-  // };
+  const handleOpenModal = largeImageURL => {
+    setShowModal(true);
+    setSelectedImage(largeImageURL);
+  };
 
   // handleCloseModal = () => {
   //   this.setState({ showModal: false });
@@ -134,7 +120,7 @@ function App() {
   return (
     <div>
       <Searchbar onSubmit={setImagesName} />
-      <ImagesGallery images={images} />
+      <ImagesGallery images={images} onClick={handleOpenModal} />
       {!isButtonDisabled && (
         <ButtonLoadMore
           loadMoreImages={loadMoreImages}

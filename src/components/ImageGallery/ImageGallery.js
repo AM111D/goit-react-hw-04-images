@@ -19,7 +19,7 @@ function ImagesGallery({ images, onClick }) {
             tags={tags}
             webformatURL={webformatURL}
             largeImageURL={largeImageURL}
-            // onClick={handleImageClick} //
+            onClick={handleImageClick}
           />
         );
       })}
