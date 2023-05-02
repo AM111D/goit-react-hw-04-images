@@ -63,9 +63,9 @@ function App() {
   };
 
   useEffect(() => {
-    if (!imagesName) {
-      return;
-    }
+    // if (!imagesName) {
+    //   return;
+    // }
     const fetchData = async () => {
       try {
         const newImages = await FetchImageApi(imagesName, page + 1);
@@ -81,7 +81,7 @@ function App() {
 
     setIsButtonDisabled(true);
     fetchData();
-  }, [page]);
+  }, [page, imagesName, images]);
 
   const handleOpenModal = largeImageURL => {
     setShowModal(true);
